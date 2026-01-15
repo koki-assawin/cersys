@@ -282,7 +282,6 @@ if events_df.empty:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown('<div class="search-box">', unsafe_allow_html=True)
     st.subheader("🔍 ค้นหาเกียรติบัตร")
 
     # เลือกกิจกรรม
@@ -302,13 +301,12 @@ with col1:
 
     # ช่องค้นหาชื่อ
     search_query = st.text_input(
-        "ระบุชื่อ-นามสกุล ของคุณ",
-        placeholder="ตัวอย่าง: สมชาย ใจดี",
+        "ระบุชื่อ หรือนามสกุลของคุณ",
+        placeholder="ตัวอย่าง: สมชาย",
         help="ไม่ต้องใส่คำนำหน้า เช่น นาย, นาง, นางสาว"
     )
 
     search_button = st.button("🔍 ค้นหา", type="primary", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.info("""
