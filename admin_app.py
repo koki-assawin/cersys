@@ -344,6 +344,26 @@ def logout():
             del st.session_state[key]
     st.rerun()
 
+def change_password(username, old_password, new_password):
+    """เปลี่ยนรหัสผ่าน"""
+    try:
+        # ตรวจสอบรหัสผ่านเดิม
+        old_hash = hash_password(old_password)
+        response = supabase.table('admin_users').select("*").eq('username', username).eq('password_hash', old_hash).execute()
+
+        if not response.data or len(response.data) == 0:
+            return False, "รหัสผ่านเดิมไม่ถูกต้อง"
+
+        # อัพเดทรหัสผ่านใหม่
+        new_hash = hash_password(new_password)
+        supabase.table('admin_users').update({
+            'password_hash': new_hash
+        }).eq('username', username).execute()
+
+        return True, "เปลี่ยนรหัสผ่านสำเร็จ"
+    except Exception as e:
+        return False, f"เกิดข้อผิดพลาด: {str(e)}"
+
 # --- ฟังก์ชันจัดการข้อมูล ---
 def extract_google_sheet_id(link):
     """ดึง Sheet ID จาก Google Sheet link"""
@@ -525,7 +545,7 @@ with st.sidebar:
 
     menu = st.radio(
         "เมนู",
-        ["📊 Dashboard", "➕ เพิ่มกิจกรรมใหม่", "📋 จัดการกิจกรรม", "📥 ดาวน์โหลด Template"],
+        ["📊 Dashboard", "➕ เพิ่มกิจกรรมใหม่", "📋 จัดการกิจกรรม", "📥 ดาวน์โหลด Template", "🔑 เปลี่ยนรหัสผ่าน"],
         index=0
     )
 
@@ -856,6 +876,49 @@ elif menu == "📥 ดาวน์โหลด Template":
         ]
     }
     st.dataframe(pd.DataFrame(example_data))
+
+# --- เปลี่ยนรหัสผ่าน ---
+elif menu == "🔑 เปลี่ยนรหัสผ่าน":
+    st.header("🔑 เปลี่ยนรหัสผ่าน")
+
+    st.info(f"กำลังเปลี่ยนรหัสผ่านสำหรับ: **{st.session_state.username}**")
+
+    with st.form("change_password_form"):
+        old_password = st.text_input("รหัสผ่านเดิม", type="password", placeholder="กรอกรหัสผ่านเดิม")
+        new_password = st.text_input("รหัสผ่านใหม่", type="password", placeholder="กรอกรหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)")
+        confirm_password = st.text_input("ยืนยันรหัสผ่านใหม่", type="password", placeholder="กรอกรหัสผ่านใหม่อีกครั้ง")
+
+        submit = st.form_submit_button("🔄 เปลี่ยนรหัสผ่าน", type="primary", use_container_width=True)
+
+        if submit:
+            if not old_password or not new_password or not confirm_password:
+                st.error("❌ กรุณากรอกข้อมูลให้ครบทุกช่อง")
+            elif len(new_password) < 6:
+                st.error("❌ รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร")
+            elif new_password != confirm_password:
+                st.error("❌ รหัสผ่านใหม่ไม่ตรงกัน")
+            elif old_password == new_password:
+                st.error("❌ รหัสผ่านใหม่ต้องไม่เหมือนรหัสผ่านเดิม")
+            else:
+                success, message = change_password(st.session_state.username, old_password, new_password)
+                if success:
+                    st.success(f"✅ {message}")
+                    st.balloons()
+                    st.info("กรุณา Login ใหม่ด้วยรหัสผ่านใหม่")
+                    # Logout หลังเปลี่ยนรหัสผ่าน
+                    import time
+                    time.sleep(2)
+                    logout()
+                else:
+                    st.error(f"❌ {message}")
+
+    st.markdown("---")
+    st.warning("""
+    **คำแนะนำการตั้งรหัสผ่าน:**
+    - ควรมีความยาวอย่างน้อย 6 ตัวอักษร
+    - ควรมีตัวอักษรผสมตัวเลข
+    - ไม่ควรใช้ข้อมูลส่วนตัวที่เดาง่าย
+    """)
 
 # --- Footer ---
 st.markdown("---")
