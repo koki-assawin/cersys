@@ -1,0 +1,60 @@
+Building wheels for collected packages: pyroaring
+  Building wheel for pyroaring (pyproject.toml) ... error
+  error: subprocess-exited-with-error
+
+  × Building wheel for pyroaring (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [30 lines of output]
+      C:\Users\Lenovo\AppData\Local\Temp\pip-build-env-9i6jwptb\overlay\Lib\site-packages\setuptools\dist.py:759: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+
+              License :: OSI Approved :: MIT License
+
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+
+      !!
+        self._finalize_license_expression()
+      running bdist_wheel
+      running build
+      running build_py
+      creating build\lib.win-amd64-cpython-314\pyroaring
+      copying pyroaring\__init__.pyi -> build\lib.win-amd64-cpython-314\pyroaring
+      copying pyroaring\py.typed -> build\lib.win-amd64-cpython-314\pyroaring
+      running build_ext
+      warning: pyroaring\abstract_bitmap.pxi:166:17: noexcept clause is ignored for function returning Python object
+      warning: pyroaring\abstract_bitmap.pxi:488:18: noexcept clause is ignored for function returning Python object
+      warning: pyroaring\abstract_bitmap.pxi:872:17: noexcept clause is ignored for function returning Python object
+      warning: pyroaring\abstract_bitmap.pxi:1398:18: noexcept clause is ignored for function returning Python object
+      warning: pyroaring\bitmap.pxi:109:19: noexcept clause is ignored for function returning Python object
+      warning: pyroaring\bitmap.pxi:380:19: noexcept clause is ignored for function returning Python object
+      Compiling pyroaring\pyroaring.pyx because it changed.
+      [1/1] Cythonizing pyroaring\pyroaring.pyx
+      building 'pyroaring' extension
+      error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for pyroaring
+Failed to build pyroaring
+error: failed-wheel-build-for-install
+
+× Failed to build installable wheels for some pyproject.toml based projects
+╰─> pyroaring
+
+====================================================
+Installation Complete!
+====================================================
+
+Testing connection...
+============================================================
+Supabase Connection Test
+============================================================
+
+[1/5] Checking dependencies...
+ERROR: supabase library not found
+
+Please run: pip install -r requirements_cloud.txt

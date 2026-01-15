@@ -1,0 +1,98 @@
+================================================================
+  ระบบ V2.0 - สรุปการปรับปรุง
+================================================================
+
+✅ ปัญหาที่แก้ไข:
+
+1. การค้นหา:
+   - BEFORE: ค้นหาจากลำดับ
+   - AFTER:  ค้นหาจากชื่อ-นามสกุล (ilike search)
+
+2. ปุ่มดาวน์โหลด:
+   - BEFORE: คลิกไปที่โฟลเดอร์
+   - AFTER:  คลิกดาวน์โหลดไฟล์โดยตรง
+            URL: drive.google.com/uc?export=download&id={FILE_ID}
+
+3. ปุ่มดูไฟล์:
+   - BEFORE: คลิกไปที่โฟลเดอร์
+   - AFTER:  คลิกดูไฟล์ผ่าน Google User Content
+            URL: lh3.googleusercontent.com/d/{FILE_ID}
+
+================================================================
+
+📝 ไฟล์ที่แก้ไข:
+
+1. admin_app.py
+   - อ่าน File ID จาก Excel (คอลัมน์ใหม่)
+   - สร้าง URL ของแต่ละไฟล์จาก File ID
+   - folder_link เป็น optional (ใช้อ้างอิงเท่านั้น)
+
+2. user_app.py
+   - เพิ่ม function: extract_file_id()
+   - เพิ่ม function: convert_to_download_link()
+   - เพิ่ม function: convert_to_preview_link()
+   - แปลง URL เป็น direct download และ googleusercontent
+
+3. template_รายชื่อ_v2.xlsx (ใหม่)
+   - เพิ่มคอลัมน์ "File ID"
+   - ตัวอย่างข้อมูล File ID
+
+4. create_new_template.py (ใหม่)
+   - สคริปต์สร้าง Template ใหม่
+
+5. HOW_TO_USE_V2.md (ใหม่)
+   - คู่มือใช้งานฉบับปรับปรุง
+   - วิธีหา File ID
+   - FAQ และ Tips
+
+================================================================
+
+🚀 วิธีใช้งาน:
+
+ADMIN:
+1. run_admin.bat
+2. ดาวน์โหลด Template (เมนู: ดาวน์โหลด Template)
+3. กรอก File ID ของแต่ละไฟล์ใน Excel
+4. อัพโหลด Excel ในหน้า "เพิ่มกิจกรรมใหม่"
+
+USER:
+1. run_user.bat
+2. เลือกกิจกรรม
+3. ค้นหาด้วยชื่อ-นามสกุล
+4. คลิก "ดาวน์โหลด" หรือ "ดูไฟล์"
+
+================================================================
+
+📂 โครงสร้างไฟล์:
+
+C:\xampp\htdocs\cersys\
+├── admin_app.py                     (แก้ไขแล้ว)
+├── user_app.py                      (แก้ไขแล้ว)
+├── template_รายชื่อ_v2.xlsx         (ใหม่)
+├── create_new_template.py           (ใหม่)
+├── HOW_TO_USE_V2.md                 (ใหม่)
+├── UPDATE_SUMMARY.txt               (ไฟล์นี้)
+├── setup_database_v2.sql
+├── requirements_v2.txt
+├── run_admin.bat
+├── run_user.bat
+└── ...
+
+================================================================
+
+🎯 ขั้นตอนต่อไป:
+
+1. รัน SQL: setup_database_v2.sql ใน Supabase (ถ้ายังไม่ได้รัน)
+2. ทดสอบระบบ:
+   - run_admin.bat → เพิ่มกิจกรรม
+   - run_user.bat → ค้นหาและดาวน์โหลด
+
+================================================================
+
+💡 Tips:
+
+- File ID ต้องคัดลอกจาก URL ของแต่ละไฟล์
+- แต่ละไฟล์ต้อง share เป็น "Anyone with the link"
+- ตรวจสอบ File ID ไม่มี space หน้า-หลัง
+
+================================================================

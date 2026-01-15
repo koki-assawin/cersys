@@ -1,0 +1,12 @@
+# Requirements for Certificate System V2.0 (Google Drive Version)
+
+# Core
+streamlit>=1.28.0
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Database
+supabase>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0

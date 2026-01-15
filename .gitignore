@@ -1,0 +1,46 @@
+# Streamlit Secrets (ห้าม commit!)
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Environment Variables
+.env
+.env.local
+
+# Local storage (สำหรับ local version)
+certificates_storage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Windows reserved files
+nul
+NUL
