@@ -592,13 +592,42 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- ปุ่มสำหรับเปิด Popup ---
-col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
-with col_btn1:
-    if st.button("📋 นโยบายความเป็นส่วนตัว", use_container_width=True):
+# --- ลิงค์ข้อความสำหรับเปิด Popup ---
+st.markdown("""
+<style>
+    .footer-links {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    .footer-links a {
+        color: #60A5FA;
+        text-decoration: none;
+        margin: 0 1rem;
+        font-size: 0.9rem;
+    }
+    .footer-links a:hover {
+        text-decoration: underline;
+    }
+    /* ซ่อน checkbox label */
+    .stCheckbox > label > div:first-child {
+        display: none;
+    }
+    .stCheckbox > label {
+        color: #60A5FA !important;
+        font-size: 0.9rem;
+    }
+    .stCheckbox > label:hover {
+        text-decoration: underline;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+col_cb1, col_cb2, col_cb3 = st.columns([1, 1, 1])
+with col_cb1:
+    if st.checkbox("📋 นโยบายความเป็นส่วนตัว", key="show_privacy"):
         show_privacy_policy()
-with col_btn2:
-    if st.button("📞 ติดต่อผู้ดูแลระบบ", use_container_width=True):
+with col_cb2:
+    if st.checkbox("📞 ติดต่อผู้ดูแลระบบ", key="show_contact"):
         show_contact_admin()
 
 # Link ไปหน้า Admin (ซ่อนไว้ใน sidebar)
