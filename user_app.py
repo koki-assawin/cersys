@@ -107,9 +107,9 @@ st.markdown("""
         box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
     }
 
-    /* Button styling */
+    /* Button styling - สีเขียวมิ้นท์ */
     .stButton>button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
         color: white;
         border: none;
         padding: 0.75rem 2rem;
@@ -117,17 +117,18 @@ st.markdown("""
         font-weight: 600;
         font-family: 'Prompt', sans-serif !important;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
     }
 
-    /* Link button styling */
+    /* Link button styling - สีฟ้า */
     .stLinkButton>a {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%) !important;
         color: white !important;
         border: none !important;
         padding: 0.5rem 1.5rem !important;
@@ -140,7 +141,37 @@ st.markdown("""
 
     .stLinkButton>a:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4) !important;
+        background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%) !important;
+    }
+
+    /* LINE Browser Warning */
+    .line-warning {
+        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+        border: 1px solid #F59E0B;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+        color: #92400E;
+    }
+
+    .line-warning-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Privacy link */
+    .privacy-link {
+        color: rgba(255,255,255,0.8);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .privacy-link:hover {
+        color: white;
     }
 
     /* Input styling */
@@ -172,9 +203,9 @@ st.markdown("""
     /* Footer styling */
     .footer-container {
         text-align: center;
-        padding: 2rem;
+        padding: 2.5rem 2rem;
         margin-top: 3rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
         border-radius: 15px;
         color: white;
     }
@@ -185,18 +216,45 @@ st.markdown("""
     }
 
     .footer-title {
-        font-size: 1rem;
+        font-size: 1.1rem;
         font-weight: 600;
+        margin-bottom: 0.75rem !important;
+        color: #F9FAFB;
+    }
+
+    .footer-org {
+        font-size: 0.95rem;
+        color: #E5E7EB;
         margin-bottom: 0.5rem !important;
     }
 
     .footer-copyright {
-        font-size: 0.9rem;
-        opacity: 0.9;
+        font-size: 0.85rem;
+        color: #9CA3AF;
+        margin-top: 1rem !important;
     }
 
-    .footer-school {
-        font-size: 0.85rem;
+    .footer-privacy {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+        margin-top: 0.5rem !important;
+    }
+
+    .footer-privacy a {
+        color: #60A5FA;
+        text-decoration: none;
+    }
+
+    .footer-privacy a:hover {
+        text-decoration: underline;
+    }
+
+    .footer-dev {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-top: 1rem !important;
+        padding-top: 1rem;
+        border-top: 1px solid #4B5563;
         opacity: 0.85;
     }
 
@@ -333,6 +391,15 @@ if search_button:
         if not results.empty:
             st.success(f"✅ พบข้อมูลจำนวน {len(results)} รายการ")
 
+            # คำเตือนสำหรับผู้ใช้ LINE Browser
+            st.markdown("""
+            <div class="line-warning">
+                <div class="line-warning-title">⚠️ หากเปิดผ่านแอป LINE</div>
+                <div>กรุณาคัดลอกลิงค์ไปเปิดในเบราว์เซอร์ (Chrome, Safari) เพื่อดาวน์โหลดไฟล์<br>
+                <strong>วิธี:</strong> กดปุ่ม ⋮ มุมขวาบน → เลือก "เปิดใน Chrome/Safari"</div>
+            </div>
+            """, unsafe_allow_html=True)
+
             for index, row in results.iterrows():
                 st.markdown('<div class="result-card">', unsafe_allow_html=True)
 
@@ -381,11 +448,51 @@ if search_button:
 st.markdown("---")
 st.markdown("""
 <div class="footer-container">
-    <p class="footer-title">ระบบดาวน์โหลดเกียรติบัตรออนไลน์ V3.0</p>
-    <p class="footer-copyright">Copyright 2026 นายอัศวิน จุลมูล</p>
-    <p class="footer-school">โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
+    <p class="footer-title">ระบบออกเกียรติบัตรอิเล็กทรอนิกส์</p>
+    <p class="footer-org">โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
+    <p class="footer-copyright">© 2567 สงวนลิขสิทธิ์ โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
+    <p class="footer-privacy">
+        <a href="#privacy" onclick="document.getElementById('privacy-modal').style.display='block'">นโยบายความเป็นส่วนตัว</a> |
+        <a href="#contact">ติดต่อผู้ดูแลระบบ</a>
+    </p>
+    <p class="footer-dev">พัฒนาโดย นายอัศวิน จุลมูล</p>
 </div>
 """, unsafe_allow_html=True)
+
+# --- นโยบายความเป็นส่วนตัว ---
+with st.expander("📋 นโยบายความเป็นส่วนตัว (Privacy Policy)"):
+    st.markdown("""
+    ### นโยบายความเป็นส่วนตัว
+
+    **โรงเรียนเตรียมอุดมศึกษาภาคใต้** ให้ความสำคัญกับการคุ้มครองข้อมูลส่วนบุคคลของท่าน โดยนโยบายความเป็นส่วนตัวฉบับนี้ได้อธิบายแนวปฏิบัติเกี่ยวกับการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล
+
+    #### 1. ข้อมูลที่เก็บรวบรวม
+    - ชื่อ-นามสกุล ของผู้เข้าร่วมกิจกรรม
+    - ข้อมูลการเข้าร่วมกิจกรรม/โครงการ
+
+    #### 2. วัตถุประสงค์ในการใช้ข้อมูล
+    - เพื่อออกเกียรติบัตรอิเล็กทรอนิกส์
+    - เพื่อยืนยันการเข้าร่วมกิจกรรม
+    - เพื่อการติดต่อประสานงานที่เกี่ยวข้อง
+
+    #### 3. การเปิดเผยข้อมูล
+    - ข้อมูลจะถูกใช้เพื่อวัตถุประสงค์ที่ระบุไว้เท่านั้น
+    - ไม่มีการเปิดเผยข้อมูลแก่บุคคลภายนอก ยกเว้นได้รับความยินยอมจากเจ้าของข้อมูล
+
+    #### 4. การรักษาความปลอดภัยข้อมูล
+    - ข้อมูลถูกจัดเก็บในระบบที่มีมาตรการรักษาความปลอดภัยที่เหมาะสม
+    - มีการควบคุมการเข้าถึงข้อมูลเฉพาะผู้ที่ได้รับอนุญาตเท่านั้น
+
+    #### 5. สิทธิของเจ้าของข้อมูล
+    - สิทธิในการเข้าถึงและขอรับสำเนาข้อมูลส่วนบุคคล
+    - สิทธิในการขอแก้ไขข้อมูลส่วนบุคคลให้ถูกต้อง
+    - สิทธิในการขอลบข้อมูลส่วนบุคคล
+
+    #### 6. การติดต่อ
+    หากมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัว กรุณาติดต่อ:
+    - โรงเรียนเตรียมอุดมศึกษาภาคใต้
+    - อำเภอพระพรหม จังหวัดนครศรีธรรมราช
+    """)
 
 # Link ไปหน้า Admin (ซ่อนไว้ใน sidebar)
 with st.sidebar:
