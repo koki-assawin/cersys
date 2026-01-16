@@ -570,48 +570,53 @@ if "show_privacy_dialog" not in st.session_state:
 if "show_contact_dialog" not in st.session_state:
     st.session_state.show_contact_dialog = False
 
-# Footer พร้อมลิงค์
+# Footer พร้อมลิงค์ข้อความ
 st.markdown("""
 <div class="footer-container">
     <p class="footer-title">ระบบออกเกียรติบัตรอิเล็กทรอนิกส์</p>
     <p class="footer-org">โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
-    <p class="footer-copyright">© 2567 สงวนลิขสิทธิ์ โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
+    <p class="footer-copyright">© 2569 สงวนลิขสิทธิ์ โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
     <p class="footer-dev">พัฒนาโดย นายอัศวิน จุลมูล</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ลิงค์ข้อความ
+# ลิงค์ข้อความธรรมดา ต่อจาก footer
 st.markdown("""
 <style>
-    .footer-link-btn button {
-        background: transparent !important;
+    div[data-testid="stHorizontalBlock"] .footer-text-link button {
+        background: none !important;
         border: none !important;
-        color: #9CA3AF !important;
-        padding: 0 !important;
-        font-size: 0.8rem !important;
+        color: #6B7280 !important;
+        padding: 0.2rem 0.5rem !important;
+        font-size: 0.75rem !important;
         box-shadow: none !important;
+        text-decoration: none !important;
+        font-weight: normal !important;
     }
-    .footer-link-btn button:hover {
+    div[data-testid="stHorizontalBlock"] .footer-text-link button:hover {
         color: #60A5FA !important;
         text-decoration: underline !important;
-        background: transparent !important;
+        background: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-col_link1, col_link2, col_link3 = st.columns([1, 1, 1])
+col_link1, col_link2 = st.columns(2)
 with col_link1:
-    st.markdown('<div class="footer-link-btn">', unsafe_allow_html=True)
-    if st.button("นโยบายความเป็นส่วนตัว", key="btn_privacy"):
-        st.session_state.show_privacy_dialog = True
-        st.session_state.show_contact_dialog = False
+    st.markdown('<div class="footer-text-link" style="text-align: right;">', unsafe_allow_html=True)
+    privacy_clicked = st.button("นโยบายความเป็นส่วนตัว", key="btn_privacy")
     st.markdown('</div>', unsafe_allow_html=True)
 with col_link2:
-    st.markdown('<div class="footer-link-btn">', unsafe_allow_html=True)
-    if st.button("ติดต่อผู้ดูแลระบบ", key="btn_contact"):
-        st.session_state.show_contact_dialog = True
-        st.session_state.show_privacy_dialog = False
+    st.markdown('<div class="footer-text-link" style="text-align: left;">', unsafe_allow_html=True)
+    contact_clicked = st.button("ติดต่อผู้ดูแลระบบ", key="btn_contact")
     st.markdown('</div>', unsafe_allow_html=True)
+
+if privacy_clicked:
+    st.session_state.show_privacy_dialog = True
+    st.session_state.show_contact_dialog = False
+if contact_clicked:
+    st.session_state.show_contact_dialog = True
+    st.session_state.show_privacy_dialog = False
 
 # แสดง Dialog ตาม session_state
 if st.session_state.show_privacy_dialog:
