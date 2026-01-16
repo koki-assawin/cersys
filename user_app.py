@@ -174,6 +174,62 @@ st.markdown("""
         color: white;
     }
 
+    /* Modal/Popup Styling */
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .modal-header img {
+        height: 60px;
+        object-fit: contain;
+    }
+
+    .modal-logo-school {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .modal-logo-school img {
+        height: 100px;
+        object-fit: contain;
+    }
+
+    .modal-content-box {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .contact-admin-box {
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .contact-admin-box img {
+        max-width: 250px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .contact-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .contact-subtitle {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
     /* Input styling */
     .stTextInput>div>div>input {
         border-radius: 10px !important;
@@ -321,6 +377,87 @@ def convert_to_preview_link(link):
         return f"https://lh3.googleusercontent.com/d/{file_id}"
     return link
 
+# --- Dialog สำหรับนโยบายความเป็นส่วนตัว ---
+@st.dialog("📋 นโยบายความเป็นส่วนตัว", width="large")
+def show_privacy_policy():
+    # Header พร้อม Logo OBEC
+    col_h1, col_h2, col_h3 = st.columns([1, 3, 1])
+    with col_h1:
+        st.image("images/obec.png", width=60)
+    with col_h2:
+        st.markdown("<h3 style='text-align: center; margin-top: 10px;'>นโยบายความเป็นส่วนตัว</h3>", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # Logo โรงเรียน
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("images/logotus68.png", width=120)
+
+    st.markdown("<h4 style='text-align: center;'>โรงเรียนเตรียมอุดมศึกษาภาคใต้</h4>", unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="modal-content-box">
+
+    **โรงเรียนเตรียมอุดมศึกษาภาคใต้** ให้ความสำคัญกับการคุ้มครองข้อมูลส่วนบุคคลของท่าน โดยนโยบายความเป็นส่วนตัวฉบับนี้ได้อธิบายแนวปฏิบัติเกี่ยวกับการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    #### 1. ข้อมูลที่เก็บรวบรวม
+    - ชื่อ-นามสกุล ของผู้เข้าร่วมกิจกรรม
+    - ข้อมูลการเข้าร่วมกิจกรรม/โครงการ
+
+    #### 2. วัตถุประสงค์ในการใช้ข้อมูล
+    - เพื่อออกเกียรติบัตรอิเล็กทรอนิกส์
+    - เพื่อยืนยันการเข้าร่วมกิจกรรม
+    - เพื่อการติดต่อประสานงานที่เกี่ยวข้อง
+
+    #### 3. การเปิดเผยข้อมูล
+    - ข้อมูลจะถูกใช้เพื่อวัตถุประสงค์ที่ระบุไว้เท่านั้น
+    - ไม่มีการเปิดเผยข้อมูลแก่บุคคลภายนอก ยกเว้นได้รับความยินยอมจากเจ้าของข้อมูล
+
+    #### 4. การรักษาความปลอดภัยข้อมูล
+    - ข้อมูลถูกจัดเก็บในระบบที่มีมาตรการรักษาความปลอดภัยที่เหมาะสม
+    - มีการควบคุมการเข้าถึงข้อมูลเฉพาะผู้ที่ได้รับอนุญาตเท่านั้น
+
+    #### 5. สิทธิของเจ้าของข้อมูล
+    - สิทธิในการเข้าถึงและขอรับสำเนาข้อมูลส่วนบุคคล
+    - สิทธิในการขอแก้ไขข้อมูลส่วนบุคคลให้ถูกต้อง
+    - สิทธิในการขอลบข้อมูลส่วนบุคคล
+
+    #### 6. การติดต่อ
+    หากมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัว กรุณาติดต่อ:
+    - โรงเรียนเตรียมอุดมศึกษาภาคใต้
+    - อำเภอพระพรหม จังหวัดนครศรีธรรมราช
+    """)
+
+    if st.button("ปิด", use_container_width=True):
+        st.rerun()
+
+# --- Dialog สำหรับติดต่อผู้ดูแลระบบ ---
+@st.dialog("📞 ติดต่อผู้ดูแลระบบ", width="small")
+def show_contact_admin():
+    st.markdown("""
+    <div class="contact-admin-box">
+        <div class="contact-title">ติดต่อผู้ดูแลระบบ</div>
+        <div class="contact-subtitle">สแกน QR Code เพื่อเพิ่มเพื่อนใน LINE</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("images/lineadmin.jpg", caption="LINE ผู้ดูแลระบบ", use_container_width=True)
+
+    st.markdown("""
+    ---
+    **หมายเหตุ:** กรุณาแจ้งชื่อ-นามสกุล และรายละเอียดปัญหาที่พบ
+    """)
+
+    if st.button("ปิด", use_container_width=True):
+        st.rerun()
+
 # --- ส่วน Header ---
 st.markdown("""
 <div class="main-header">
@@ -451,48 +588,18 @@ st.markdown("""
     <p class="footer-title">ระบบออกเกียรติบัตรอิเล็กทรอนิกส์</p>
     <p class="footer-org">โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
     <p class="footer-copyright">© 2567 สงวนลิขสิทธิ์ โรงเรียนเตรียมอุดมศึกษาภาคใต้</p>
-    <p class="footer-privacy">
-        <a href="#privacy" onclick="document.getElementById('privacy-modal').style.display='block'">นโยบายความเป็นส่วนตัว</a> |
-        <a href="#contact">ติดต่อผู้ดูแลระบบ</a>
-    </p>
     <p class="footer-dev">พัฒนาโดย นายอัศวิน จุลมูล</p>
 </div>
 """, unsafe_allow_html=True)
 
-# --- นโยบายความเป็นส่วนตัว ---
-with st.expander("📋 นโยบายความเป็นส่วนตัว (Privacy Policy)"):
-    st.markdown("""
-    ### นโยบายความเป็นส่วนตัว
-
-    **โรงเรียนเตรียมอุดมศึกษาภาคใต้** ให้ความสำคัญกับการคุ้มครองข้อมูลส่วนบุคคลของท่าน โดยนโยบายความเป็นส่วนตัวฉบับนี้ได้อธิบายแนวปฏิบัติเกี่ยวกับการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล
-
-    #### 1. ข้อมูลที่เก็บรวบรวม
-    - ชื่อ-นามสกุล ของผู้เข้าร่วมกิจกรรม
-    - ข้อมูลการเข้าร่วมกิจกรรม/โครงการ
-
-    #### 2. วัตถุประสงค์ในการใช้ข้อมูล
-    - เพื่อออกเกียรติบัตรอิเล็กทรอนิกส์
-    - เพื่อยืนยันการเข้าร่วมกิจกรรม
-    - เพื่อการติดต่อประสานงานที่เกี่ยวข้อง
-
-    #### 3. การเปิดเผยข้อมูล
-    - ข้อมูลจะถูกใช้เพื่อวัตถุประสงค์ที่ระบุไว้เท่านั้น
-    - ไม่มีการเปิดเผยข้อมูลแก่บุคคลภายนอก ยกเว้นได้รับความยินยอมจากเจ้าของข้อมูล
-
-    #### 4. การรักษาความปลอดภัยข้อมูล
-    - ข้อมูลถูกจัดเก็บในระบบที่มีมาตรการรักษาความปลอดภัยที่เหมาะสม
-    - มีการควบคุมการเข้าถึงข้อมูลเฉพาะผู้ที่ได้รับอนุญาตเท่านั้น
-
-    #### 5. สิทธิของเจ้าของข้อมูล
-    - สิทธิในการเข้าถึงและขอรับสำเนาข้อมูลส่วนบุคคล
-    - สิทธิในการขอแก้ไขข้อมูลส่วนบุคคลให้ถูกต้อง
-    - สิทธิในการขอลบข้อมูลส่วนบุคคล
-
-    #### 6. การติดต่อ
-    หากมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัว กรุณาติดต่อ:
-    - โรงเรียนเตรียมอุดมศึกษาภาคใต้
-    - อำเภอพระพรหม จังหวัดนครศรีธรรมราช
-    """)
+# --- ปุ่มสำหรับเปิด Popup ---
+col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+with col_btn1:
+    if st.button("📋 นโยบายความเป็นส่วนตัว", use_container_width=True):
+        show_privacy_policy()
+with col_btn2:
+    if st.button("📞 ติดต่อผู้ดูแลระบบ", use_container_width=True):
+        show_contact_admin()
 
 # Link ไปหน้า Admin (ซ่อนไว้ใน sidebar)
 with st.sidebar:
