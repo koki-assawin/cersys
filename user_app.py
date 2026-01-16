@@ -433,7 +433,8 @@ def show_privacy_policy():
     - อำเภอพระพรหม จังหวัดนครศรีธรรมราช
     """)
 
-    if st.button("ปิด", use_container_width=True):
+    if st.button("ปิด", key="close_privacy", use_container_width=True):
+        st.session_state.show_privacy_dialog = False
         st.rerun()
 
 # --- Dialog สำหรับติดต่อผู้ดูแลระบบ ---
@@ -455,16 +456,21 @@ def show_contact_admin():
     **หมายเหตุ:** กรุณาแจ้งชื่อ-นามสกุล และรายละเอียดปัญหาที่พบ
     """)
 
-    if st.button("ปิด", use_container_width=True):
+    if st.button("ปิด", key="close_contact", use_container_width=True):
+        st.session_state.show_contact_dialog = False
         st.rerun()
 
-# --- ส่วน Header ---
-st.markdown("""
-<div class="main-header">
-    <h1>🎓 ระบบดาวน์โหลดเกียรติบัตรออนไลน์</h1>
-    <p style="font-size: 1.2rem;">ค้นหาและดาวน์โหลดเกียรติบัตรของคุณ</p>
-</div>
-""", unsafe_allow_html=True)
+# --- ส่วน Header พร้อม Logo ---
+col_logo, col_title, col_logo2 = st.columns([1, 4, 1])
+with col_logo:
+    st.image("images/obec.png", width=80)
+with col_title:
+    st.markdown("""
+    <div class="main-header">
+        <h1>🎓 ระบบดาวน์โหลดเกียรติบัตรออนไลน์</h1>
+        <p style="font-size: 1.2rem;">ค้นหาและดาวน์โหลดเกียรติบัตรของคุณ</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- ส่วนค้นหา ---
 events_df = get_events()
@@ -581,8 +587,14 @@ if search_button:
             - ลองค้นหาด้วยนามสกุลแทน
             """)
 
-# --- Footer ---
+# --- Footer พร้อม Logo โรงเรียน ---
 st.markdown("---")
+
+# Logo โรงเรียนใน Footer
+col_f1, col_f2, col_f3 = st.columns([1, 2, 1])
+with col_f2:
+    st.image("images/logotus68.png", width=80)
+
 st.markdown("""
 <div class="footer-container">
     <p class="footer-title">ระบบออกเกียรติบัตรอิเล็กทรอนิกส์</p>
@@ -592,43 +604,50 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- ลิงค์ข้อความสำหรับเปิด Popup ---
+# --- ลิงค์ข้อความสำหรับเปิด Popup (ใช้ session_state) ---
 st.markdown("""
 <style>
-    .footer-links {
-        text-align: center;
-        margin-top: 1rem;
-    }
-    .footer-links a {
-        color: #60A5FA;
-        text-decoration: none;
-        margin: 0 1rem;
-        font-size: 0.9rem;
-    }
-    .footer-links a:hover {
-        text-decoration: underline;
-    }
-    /* ซ่อน checkbox label */
-    .stCheckbox > label > div:first-child {
-        display: none;
-    }
-    .stCheckbox > label {
+    .link-text-btn button {
+        background: none !important;
+        border: none !important;
         color: #60A5FA !important;
-        font-size: 0.9rem;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+        box-shadow: none !important;
+        text-decoration: underline !important;
     }
-    .stCheckbox > label:hover {
-        text-decoration: underline;
+    .link-text-btn button:hover {
+        color: #3B82F6 !important;
+        background: rgba(96, 165, 250, 0.1) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-col_cb1, col_cb2, col_cb3 = st.columns([1, 1, 1])
-with col_cb1:
-    if st.checkbox("📋 นโยบายความเป็นส่วนตัว", key="show_privacy"):
-        show_privacy_policy()
-with col_cb2:
-    if st.checkbox("📞 ติดต่อผู้ดูแลระบบ", key="show_contact"):
-        show_contact_admin()
+# ใช้ session_state เพื่อจัดการ dialog
+if "show_privacy_dialog" not in st.session_state:
+    st.session_state.show_privacy_dialog = False
+if "show_contact_dialog" not in st.session_state:
+    st.session_state.show_contact_dialog = False
+
+col_link1, col_link2, col_link3 = st.columns([1, 1, 1])
+with col_link1:
+    st.markdown('<div class="link-text-btn">', unsafe_allow_html=True)
+    if st.button("📋 นโยบายความเป็นส่วนตัว", key="btn_privacy"):
+        st.session_state.show_privacy_dialog = True
+        st.session_state.show_contact_dialog = False
+    st.markdown('</div>', unsafe_allow_html=True)
+with col_link2:
+    st.markdown('<div class="link-text-btn">', unsafe_allow_html=True)
+    if st.button("📞 ติดต่อผู้ดูแลระบบ", key="btn_contact"):
+        st.session_state.show_contact_dialog = True
+        st.session_state.show_privacy_dialog = False
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# แสดง Dialog ตาม session_state
+if st.session_state.show_privacy_dialog:
+    show_privacy_policy()
+if st.session_state.show_contact_dialog:
+    show_contact_admin()
 
 # Link ไปหน้า Admin (ซ่อนไว้ใน sidebar)
 with st.sidebar:
