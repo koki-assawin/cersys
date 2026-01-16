@@ -380,29 +380,11 @@ def convert_to_preview_link(link):
 # --- Dialog สำหรับนโยบายความเป็นส่วนตัว ---
 @st.dialog("📋 นโยบายความเป็นส่วนตัว", width="large")
 def show_privacy_policy():
-    # Header พร้อม Logo OBEC
-    col_h1, col_h2, col_h3 = st.columns([1, 3, 1])
-    with col_h1:
-        st.image("images/obec.png", width=60)
-    with col_h2:
-        st.markdown("<h3 style='text-align: center; margin-top: 10px;'>นโยบายความเป็นส่วนตัว</h3>", unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    # Logo โรงเรียน
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image("images/logotus68.png", width=120)
-
-    st.markdown("<h4 style='text-align: center;'>โรงเรียนเตรียมอุดมศึกษาภาคใต้</h4>", unsafe_allow_html=True)
+    st.markdown("### โรงเรียนเตรียมอุดมศึกษาภาคใต้")
 
     st.markdown("""
-    <div class="modal-content-box">
-
     **โรงเรียนเตรียมอุดมศึกษาภาคใต้** ให้ความสำคัญกับการคุ้มครองข้อมูลส่วนบุคคลของท่าน โดยนโยบายความเป็นส่วนตัวฉบับนี้ได้อธิบายแนวปฏิบัติเกี่ยวกับการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล
-
-    </div>
-    """, unsafe_allow_html=True)
+    """)
 
     st.markdown("""
     #### 1. ข้อมูลที่เก็บรวบรวม
@@ -460,17 +442,13 @@ def show_contact_admin():
         st.session_state.show_contact_dialog = False
         st.rerun()
 
-# --- ส่วน Header พร้อม Logo ---
-col_logo, col_title, col_logo2 = st.columns([1, 4, 1])
-with col_logo:
-    st.image("images/obec.png", width=80)
-with col_title:
-    st.markdown("""
-    <div class="main-header">
-        <h1>🎓 ระบบดาวน์โหลดเกียรติบัตรออนไลน์</h1>
-        <p style="font-size: 1.2rem;">ค้นหาและดาวน์โหลดเกียรติบัตรของคุณ</p>
-    </div>
-    """, unsafe_allow_html=True)
+# --- ส่วน Header ---
+st.markdown("""
+<div class="main-header">
+    <h1>🎓 ระบบดาวน์โหลดเกียรติบัตรออนไลน์</h1>
+    <p style="font-size: 1.2rem;">ค้นหาและดาวน์โหลดเกียรติบัตรของคุณ</p>
+</div>
+""", unsafe_allow_html=True)
 
 # --- ส่วนค้นหา ---
 events_df = get_events()
@@ -550,10 +528,6 @@ if search_button:
 
                 with col_info:
                     st.markdown(f"### 📄 {row['name']}")
-                    if row.get('order_number'):
-                        st.caption(f"ลำดับที่: {row['order_number']}")
-                    if row.get('file_name'):
-                        st.caption(f"ไฟล์: {row['file_name']}")
 
                 with col_action:
                     if row.get('google_drive_file_link'):
@@ -587,14 +561,16 @@ if search_button:
             - ลองค้นหาด้วยนามสกุลแทน
             """)
 
-# --- Footer พร้อม Logo โรงเรียน ---
+# --- Footer ---
 st.markdown("---")
 
-# Logo โรงเรียนใน Footer
-col_f1, col_f2, col_f3 = st.columns([1, 2, 1])
-with col_f2:
-    st.image("images/logotus68.png", width=80)
+# ใช้ session_state เพื่อจัดการ dialog
+if "show_privacy_dialog" not in st.session_state:
+    st.session_state.show_privacy_dialog = False
+if "show_contact_dialog" not in st.session_state:
+    st.session_state.show_contact_dialog = False
 
+# Footer พร้อมลิงค์
 st.markdown("""
 <div class="footer-container">
     <p class="footer-title">ระบบออกเกียรติบัตรอิเล็กทรอนิกส์</p>
@@ -604,41 +580,35 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- ลิงค์ข้อความสำหรับเปิด Popup (ใช้ session_state) ---
+# ลิงค์ข้อความ
 st.markdown("""
 <style>
-    .link-text-btn button {
-        background: none !important;
+    .footer-link-btn button {
+        background: transparent !important;
         border: none !important;
-        color: #60A5FA !important;
-        padding: 0.5rem 1rem !important;
-        font-size: 0.9rem !important;
+        color: #9CA3AF !important;
+        padding: 0 !important;
+        font-size: 0.8rem !important;
         box-shadow: none !important;
-        text-decoration: underline !important;
     }
-    .link-text-btn button:hover {
-        color: #3B82F6 !important;
-        background: rgba(96, 165, 250, 0.1) !important;
+    .footer-link-btn button:hover {
+        color: #60A5FA !important;
+        text-decoration: underline !important;
+        background: transparent !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ใช้ session_state เพื่อจัดการ dialog
-if "show_privacy_dialog" not in st.session_state:
-    st.session_state.show_privacy_dialog = False
-if "show_contact_dialog" not in st.session_state:
-    st.session_state.show_contact_dialog = False
-
 col_link1, col_link2, col_link3 = st.columns([1, 1, 1])
 with col_link1:
-    st.markdown('<div class="link-text-btn">', unsafe_allow_html=True)
-    if st.button("📋 นโยบายความเป็นส่วนตัว", key="btn_privacy"):
+    st.markdown('<div class="footer-link-btn">', unsafe_allow_html=True)
+    if st.button("นโยบายความเป็นส่วนตัว", key="btn_privacy"):
         st.session_state.show_privacy_dialog = True
         st.session_state.show_contact_dialog = False
     st.markdown('</div>', unsafe_allow_html=True)
 with col_link2:
-    st.markdown('<div class="link-text-btn">', unsafe_allow_html=True)
-    if st.button("📞 ติดต่อผู้ดูแลระบบ", key="btn_contact"):
+    st.markdown('<div class="footer-link-btn">', unsafe_allow_html=True)
+    if st.button("ติดต่อผู้ดูแลระบบ", key="btn_contact"):
         st.session_state.show_contact_dialog = True
         st.session_state.show_privacy_dialog = False
     st.markdown('</div>', unsafe_allow_html=True)
