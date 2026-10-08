@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import os
 import hashlib
@@ -688,7 +689,7 @@ with st.sidebar:
 
     menu = st.radio(
         "เมนู",
-        ["📊 Dashboard", "➕ เพิ่มกิจกรรมใหม่", "📋 จัดการกิจกรรม", "📥 ดาวน์โหลด Template", "🔑 เปลี่ยนรหัสผ่าน"],
+        ["📊 Dashboard", "➕ เพิ่มกิจกรรมใหม่", "📋 จัดการกิจกรรม", "📥 ดาวน์โหลด Template", "🛠️ เครื่องมือแยกไฟล์ PDF", "🔑 เปลี่ยนรหัสผ่าน"],
         index=0
     )
 
@@ -1027,6 +1028,59 @@ elif menu == "📥 ดาวน์โหลด Template":
         ]
     }
     st.dataframe(pd.DataFrame(example_data))
+
+# --- เครื่องมือแยกไฟล์ PDF ---
+elif menu == "🛠️ เครื่องมือแยกไฟล์ PDF":
+    st.header("🛠️ เครื่องมือแยกไฟล์ PDF")
+
+    st.info("""
+    โปรแกรมสำหรับแยกไฟล์ PDF ที่รวมเกียรติบัตรหลายใบ ให้เป็นไฟล์ละ 1 ใบ ชื่อ 1.pdf, 2.pdf, 3.pdf ...
+    ก่อนนำไปอัปโหลดขึ้น Google Drive (ติดตั้งและใช้งานบนเครื่อง Windows)
+    """)
+
+    tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+    zip_path = os.path.join(tools_dir, "PDF_Splitter.zip")
+    manual_path = os.path.join(tools_dir, "pdf_splitter_manual.html")
+
+    col_zip, col_manual = st.columns(2)
+    with col_zip:
+        if os.path.exists(zip_path):
+            with open(zip_path, "rb") as file:
+                st.download_button(
+                    label="📦 ดาวน์โหลดโปรแกรม (PDF_Splitter.zip)",
+                    data=file,
+                    file_name="PDF_Splitter.zip",
+                    mime="application/zip",
+                    type="primary",
+                    use_container_width=True
+                )
+        else:
+            st.error("ไม่พบไฟล์โปรแกรม tools/PDF_Splitter.zip")
+
+    manual_html = None
+    if os.path.exists(manual_path):
+        with open(manual_path, "r", encoding="utf-8") as file:
+            manual_html = file.read()
+
+    with col_manual:
+        if manual_html:
+            st.download_button(
+                label="📖 ดาวน์โหลดคู่มือ (เปิดในเบราว์เซอร์/สั่งพิมพ์ได้)",
+                data=manual_html.encode("utf-8"),
+                file_name="คู่มือโปรแกรมแยกไฟล์PDF.html",
+                mime="text/html",
+                use_container_width=True
+            )
+
+    st.markdown("""
+    **เริ่มใช้งานแบบย่อ:** แตกไฟล์ zip → ดับเบิลคลิก `1_ติดตั้ง.bat` (ครั้งแรกครั้งเดียว)
+    → ดับเบิลคลิก `2_เปิดโปรแกรม.bat` ทุกครั้งที่ใช้งาน
+    """)
+
+    if manual_html:
+        st.markdown("---")
+        st.subheader("📖 คู่มือการใช้งาน")
+        components.html(manual_html, height=900, scrolling=True)
 
 # --- เปลี่ยนรหัสผ่าน ---
 elif menu == "🔑 เปลี่ยนรหัสผ่าน":
