@@ -319,6 +319,11 @@ st.markdown("""
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
     }
 
+    /* Keep Material icons rendering as icons (not text) */
+    [data-testid="stIconMaterial"], span[class*="material-symbols"] {
+        font-family: 'Material Symbols Rounded' !important;
+    }
+
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -331,7 +336,11 @@ def get_events():
     """ดึงรายการกิจกรรมทั้งหมด"""
     try:
         response = supabase.table('events').select("*").order('id', desc=True).execute()
-        return pd.DataFrame(response.data)
+        df = pd.DataFrame(response.data)
+        # ไม่แสดงกิจกรรมที่ Admin ซ่อนไว้
+        if 'is_hidden' in df.columns:
+            df = df[df['is_hidden'] != True]
+        return df
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาด: {str(e)}")
         return pd.DataFrame()

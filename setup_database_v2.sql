@@ -35,7 +35,8 @@ CREATE TABLE events (
     google_drive_folder_link TEXT,
     description TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
-    created_by TEXT
+    created_by TEXT,
+    is_hidden BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 COMMENT ON TABLE events IS 'ตารางเก็บรายการกิจกรรม/โครงการที่มีการแจกเกียรติบัตร';

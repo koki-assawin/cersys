@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import os
 import hashlib
+import hmac
+import time
 import re
 from supabase import create_client, Client
 from datetime import datetime
@@ -254,10 +256,24 @@ st.markdown("""
         opacity: 0.9;
     }
 
-    /* Hide Streamlit branding */
+    /* Keep Material icons rendering as icons (not text) */
+    [data-testid="stIconMaterial"], span[class*="material-symbols"] {
+        font-family: 'Material Symbols Rounded' !important;
+    }
+
+    /* Hide Streamlit branding (keep header so the sidebar toggle stays visible) */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    header[data-testid="stHeader"] {background: transparent;}
+    [data-testid="stToolbar"] {visibility: hidden;}
+
+    /* Sidebar toggle button - make it easy to find */
+    [data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapsedControl"] {
+        visibility: visible !important;
+        background: #FBCFE8;
+        border-radius: 10px;
+        color: #9D174D;
+    }
 
     /* DataTable styling */
     .stDataFrame {
@@ -337,11 +353,41 @@ def check_login(username, password):
         st.error(f"เกิดข้อผิดพลาด: {str(e)}")
         return False, None
 
+SESSION_SECRET = st.secrets.get("SESSION_SECRET", os.getenv("SESSION_SECRET", SUPABASE_KEY))
+SESSION_HOURS = 12
+
+def _sign_session(username, expires, password_hash):
+    """ลายเซ็นของ session (ผูกกับ password_hash เพื่อให้เปลี่ยนรหัสแล้ว session เดิมใช้ไม่ได้)"""
+    msg = f"{username}|{expires}|{password_hash}".encode()
+    return hmac.new(SESSION_SECRET.encode(), msg, hashlib.sha256).hexdigest()
+
+def create_session_token(user_data):
+    """สร้าง token สำหรับจำการ Login (ใช้ตอน refresh หน้า)"""
+    expires = int(time.time()) + SESSION_HOURS * 3600
+    sig = _sign_session(user_data['username'], expires, user_data['password_hash'])
+    return f"{user_data['username']}.{expires}.{sig}"
+
+def restore_session(token):
+    """ตรวจสอบ token แล้วคืนค่าข้อมูลผู้ใช้ ถ้าไม่ถูกต้องหรือหมดอายุคืน None"""
+    try:
+        username, expires, sig = token.rsplit('.', 2)
+        if int(expires) < time.time():
+            return None
+        response = supabase.table('admin_users').select("*").eq('username', username).execute()
+        if not response.data:
+            return None
+        user_data = response.data[0]
+        expected = _sign_session(username, expires, user_data['password_hash'])
+        return user_data if hmac.compare_digest(sig, expected) else None
+    except Exception:
+        return None
+
 def logout():
     """Logout"""
     for key in ['logged_in', 'username', 'full_name']:
         if key in st.session_state:
             del st.session_state[key]
+    st.query_params.clear()
     st.rerun()
 
 def change_password(username, old_password, new_password):
@@ -482,9 +528,105 @@ def delete_event(event_id):
         st.error(f"เกิดข้อผิดพลาด: {str(e)}")
         return False
 
+def update_event(event_id, event_name, sheet_link, description):
+    """แก้ไขข้อมูลกิจกรรม"""
+    try:
+        supabase.table('events').update({
+            "event_name": event_name,
+            "google_drive_folder_link": sheet_link,
+            "description": description
+        }).eq('id', event_id).execute()
+        return True
+    except Exception as e:
+        st.error(f"เกิดข้อผิดพลาด: {str(e)}")
+        return False
+
+def set_event_hidden(event_id, hidden):
+    """ซ่อน/แสดงกิจกรรมในหน้าผู้ใช้"""
+    try:
+        supabase.table('events').update({"is_hidden": hidden}).eq('id', event_id).execute()
+        return True
+    except Exception as e:
+        if 'is_hidden' in str(e):
+            st.error("❌ ฐานข้อมูลยังไม่มีคอลัมน์ is_hidden กรุณารันคำสั่งนี้ใน Supabase SQL Editor ก่อน:")
+            st.code("ALTER TABLE events ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT FALSE;", language="sql")
+        else:
+            st.error(f"เกิดข้อผิดพลาด: {str(e)}")
+        return False
+
+def import_certificates(event_id, df):
+    """สร้างเกียรติบัตรจากข้อมูล Google Sheet คืนค่า (success_count, error_count)"""
+    progress_bar = st.progress(0)
+    success_count = 0
+    error_count = 0
+
+    for i, (idx, row) in enumerate(df.iterrows()):
+        try:
+            order_num = int(row['ลำดับที่'])
+            name = str(row['ชื่อ-สกุล']).strip()
+            file_url = str(row['URL']).strip()
+
+            if not name or name.lower() == 'nan':
+                st.warning(f"⚠️ แถวที่ {idx+1}: ไม่มีชื่อ")
+                error_count += 1
+                continue
+
+            if not file_url or file_url.lower() == 'nan':
+                st.warning(f"⚠️ แถวที่ {idx+1}: ไม่มี URL")
+                error_count += 1
+                continue
+
+            file_name = f"{order_num}.pdf"
+
+            # บันทึกลง Database
+            if add_certificate(event_id, name, order_num, file_url, file_name):
+                success_count += 1
+            else:
+                error_count += 1
+
+        except Exception as e:
+            st.warning(f"⚠️ แถวที่ {idx+1}: {str(e)}")
+            error_count += 1
+
+        progress_bar.progress((i + 1) / len(df))
+
+    return success_count, error_count
+
+def read_and_validate_sheet(sheet_link):
+    """อ่าน Google Sheet และตรวจคอลัมน์ คืนค่า DataFrame หรือ None (แสดง error แล้ว)"""
+    df, error = read_google_sheet(sheet_link)
+    if error:
+        st.error(f"❌ {error}")
+        return None
+
+    required_columns = ['ลำดับที่', 'ชื่อ-สกุล', 'URL']
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        st.error(f"❌ Google Sheet ขาดคอลัมน์: {', '.join(missing_columns)}")
+        st.info(f"คอลัมน์ที่มี: {', '.join(df.columns.tolist())}")
+        st.warning("""
+        **Google Sheet ต้องมีคอลัมน์:**
+        - ลำดับที่
+        - ชื่อ-สกุล
+        - URL
+        """)
+        return None
+
+    return df
+
 # --- ส่วน Login ---
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
+
+# กู้ session จาก URL เมื่อ refresh หน้า
+if not st.session_state.logged_in and 'session' in st.query_params:
+    user_data = restore_session(st.query_params['session'])
+    if user_data:
+        st.session_state.logged_in = True
+        st.session_state.username = user_data['username']
+        st.session_state.full_name = user_data.get('full_name') or user_data['username']
+    else:
+        st.query_params.clear()
 
 if not st.session_state.logged_in:
     st.markdown("""
@@ -509,6 +651,7 @@ if not st.session_state.logged_in:
                         st.session_state.logged_in = True
                         st.session_state.username = username
                         st.session_state.full_name = user_data.get('full_name', username)
+                        st.query_params['session'] = create_session_token(user_data)
                         st.success("เข้าสู่ระบบสำเร็จ!")
                         st.rerun()
                     else:
@@ -581,7 +724,8 @@ if menu == "📊 Dashboard":
 
     if not events_df.empty and 'id' in events_df.columns:
         for idx, row in events_df.head(5).iterrows():
-            with st.expander(f"🎯 {row['event_name']} (ID: {row['id']})"):
+            status = " · 🙈 ซ่อนอยู่" if row.get('is_hidden', False) == True else ""
+            with st.expander(f"🎯 {row['event_name']} (ID: {row['id']}){status}"):
                 st.write(f"**รายละเอียด:** {row.get('description', 'ไม่มี')}")
                 st.write(f"**สร้างโดย:** {row.get('created_by', 'N/A')}")
                 created_at = row.get('created_at', '')
@@ -665,26 +809,8 @@ elif menu == "➕ เพิ่มกิจกรรมใหม่":
                 st.error("❌ กรุณากรอกชื่อกิจกรรมและลิงค์ Google Sheet")
             else:
                 with st.spinner("กำลังอ่าน Google Sheet..."):
-                    # อ่าน Google Sheet
-                    df, error = read_google_sheet(sheet_link)
-
-                    if error:
-                        st.error(f"❌ {error}")
-                        st.stop()
-
-                    # ตรวจสอบคอลัมน์ที่จำเป็น
-                    required_columns = ['ลำดับที่', 'ชื่อ-สกุล', 'URL']
-                    missing_columns = [col for col in required_columns if col not in df.columns]
-
-                    if missing_columns:
-                        st.error(f"❌ Google Sheet ขาดคอลัมน์: {', '.join(missing_columns)}")
-                        st.info(f"คอลัมน์ที่มี: {', '.join(df.columns.tolist())}")
-                        st.warning("""
-                        **Google Sheet ต้องมีคอลัมน์:**
-                        - ลำดับที่
-                        - ชื่อ-สกุล
-                        - URL
-                        """)
+                    df = read_and_validate_sheet(sheet_link)
+                    if df is None:
                         st.stop()
 
                     st.success(f"✅ อ่าน Google Sheet สำเร็จ จำนวน {len(df)} รายการ")
@@ -702,39 +828,7 @@ elif menu == "➕ เพิ่มกิจกรรมใหม่":
                         st.success(f"✅ สร้างกิจกรรม ID: {event_id} สำเร็จ")
 
                         # สร้างเกียรติบัตรจาก Google Sheet
-                        progress_bar = st.progress(0)
-                        success_count = 0
-                        error_count = 0
-
-                        for idx, row in df.iterrows():
-                            try:
-                                order_num = int(row['ลำดับที่'])
-                                name = str(row['ชื่อ-สกุล']).strip()
-                                file_url = str(row['URL']).strip()
-
-                                if not name or name.lower() == 'nan':
-                                    st.warning(f"⚠️ แถวที่ {idx+1}: ไม่มีชื่อ")
-                                    error_count += 1
-                                    continue
-
-                                if not file_url or file_url.lower() == 'nan':
-                                    st.warning(f"⚠️ แถวที่ {idx+1}: ไม่มี URL")
-                                    error_count += 1
-                                    continue
-
-                                file_name = f"{order_num}.pdf"
-
-                                # บันทึกลง Database
-                                if add_certificate(event_id, name, order_num, file_url, file_name):
-                                    success_count += 1
-                                else:
-                                    error_count += 1
-
-                            except Exception as e:
-                                st.warning(f"⚠️ แถวที่ {idx+1}: {str(e)}")
-                                error_count += 1
-
-                            progress_bar.progress((idx + 1) / len(df))
+                        success_count, error_count = import_certificates(event_id, df)
 
                         if error_count > 0:
                             st.warning(f"⚠️ สร้างเกียรติบัตรสำเร็จ {success_count}/{len(df)} ใบ ({error_count} ข้ามไป)")
@@ -753,26 +847,83 @@ elif menu == "📋 จัดการกิจกรรม":
     if events_df.empty:
         st.info("ยังไม่มีกิจกรรมในระบบ")
     else:
+        st.caption("กิจกรรมที่ซ่อนไว้จะไม่แสดงในหน้าค้นหาเกียรติบัตรของผู้ใช้")
+
         for idx, event in events_df.iterrows():
-            with st.expander(f"🎯 {event['event_name']} (ID: {event['id']})"):
+            event_id = int(event['id'])
+            is_hidden = bool(event.get('is_hidden', False) == True)
+            editing = st.session_state.get('editing_event_id') == event_id
+            status = " · 🙈 ซ่อนอยู่" if is_hidden else ""
+
+            with st.expander(f"🎯 {event['event_name']} (ID: {event_id}){status}", expanded=editing):
                 col1, col2 = st.columns([3, 1])
 
                 with col1:
+                    st.write(f"**สถานะ:** {'🙈 ซ่อน (ผู้ใช้มองไม่เห็น)' if is_hidden else '👁️ แสดงอยู่'}")
                     st.write(f"**รายละเอียด:** {event.get('description', 'ไม่มี')}")
-                    st.write(f"**ลิงค์โฟลเดอร์:** {event.get('google_drive_folder_link', 'ไม่มี')}")
+                    st.write(f"**ลิงค์ Google Sheet:** {event.get('google_drive_folder_link', 'ไม่มี')}")
                     st.write(f"**สร้างโดย:** {event.get('created_by', 'N/A')}")
 
-                    certs = get_certificates_by_event(event['id'])
+                    certs = get_certificates_by_event(event_id)
                     st.write(f"**จำนวนเกียรติบัตร:** {len(certs)} ใบ")
 
                     if not certs.empty:
                         st.dataframe(certs[['order_number', 'name', 'file_name']].head(10))
 
                 with col2:
-                    if st.button(f"🗑️ ลบ", key=f"del_{event['id']}"):
-                        if delete_event(event['id']):
+                    if st.button("👁️ แสดง" if is_hidden else "🙈 ซ่อน", key=f"hide_{event_id}", use_container_width=True):
+                        if set_event_hidden(event_id, not is_hidden):
+                            st.rerun()
+
+                    if st.button("✏️ แก้ไข", key=f"edit_{event_id}", use_container_width=True):
+                        st.session_state.editing_event_id = None if editing else event_id
+                        st.rerun()
+
+                    if st.button("🗑️ ลบ", key=f"del_{event_id}", use_container_width=True):
+                        if delete_event(event_id):
                             st.success("ลบสำเร็จ")
                             st.rerun()
+
+                if editing:
+                    st.markdown("---")
+                    st.subheader("✏️ แก้ไขกิจกรรม")
+                    with st.form(f"edit_form_{event_id}"):
+                        new_name = st.text_input("ชื่อกิจกรรม/โครงการ *", value=event.get('event_name') or "")
+                        new_desc = st.text_area("รายละเอียด", value=event.get('description') or "")
+                        new_link = st.text_input("ลิงค์ Google Sheet *", value=event.get('google_drive_folder_link') or "")
+                        reimport = st.checkbox(
+                            "โหลดรายชื่อจาก Google Sheet ใหม่ (ลบรายชื่อเดิมของกิจกรรมนี้แล้วนำเข้าใหม่)",
+                            help="ใช้เมื่อแก้ไขรายชื่อใน Google Sheet หรือเปลี่ยนลิงค์ Google Sheet"
+                        )
+
+                        save_col, cancel_col = st.columns(2)
+                        save = save_col.form_submit_button("💾 บันทึก", type="primary", use_container_width=True)
+                        cancel = cancel_col.form_submit_button("ยกเลิก", use_container_width=True)
+
+                    if cancel:
+                        st.session_state.editing_event_id = None
+                        st.rerun()
+
+                    if save:
+                        if not new_name.strip() or not new_link.strip():
+                            st.error("❌ กรุณากรอกชื่อกิจกรรมและลิงค์ Google Sheet")
+                        else:
+                            df = None
+                            if reimport:
+                                with st.spinner("กำลังอ่าน Google Sheet..."):
+                                    df = read_and_validate_sheet(new_link.strip())
+
+                            if not reimport or df is not None:
+                                if update_event(event_id, new_name.strip(), new_link.strip(), new_desc.strip()):
+                                    if reimport:
+                                        with st.spinner("กำลังนำเข้ารายชื่อใหม่..."):
+                                            supabase.table('certificates').delete().eq('event_id', event_id).execute()
+                                            success_count, error_count = import_certificates(event_id, df)
+                                        st.success(f"✅ นำเข้าเกียรติบัตร {success_count}/{len(df)} ใบ")
+                                    st.session_state.editing_event_id = None
+                                    st.success("✅ บันทึกการแก้ไขสำเร็จ")
+                                    time.sleep(1)
+                                    st.rerun()
 
 # --- คู่มือ Google Sheet ---
 elif menu == "📥 ดาวน์โหลด Template":
@@ -906,7 +1057,6 @@ elif menu == "🔑 เปลี่ยนรหัสผ่าน":
                     st.balloons()
                     st.info("กรุณา Login ใหม่ด้วยรหัสผ่านใหม่")
                     # Logout หลังเปลี่ยนรหัสผ่าน
-                    import time
                     time.sleep(2)
                     logout()
                 else:
