@@ -108,7 +108,7 @@ st.markdown("""
     }
 
     /* Button styling - สีเขียวมิ้นท์ */
-    .stButton>button {
+    .stButton>button, .stFormSubmitButton>button {
         background: linear-gradient(135deg, #10B981 0%, #059669 100%);
         color: white;
         border: none;
@@ -120,7 +120,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
-    .stButton>button:hover {
+    .stButton>button:hover, .stFormSubmitButton>button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
@@ -487,21 +487,22 @@ with col1:
         if event_info.get('description'):
             st.caption(f"📝 {event_info['description']}")
 
-    # ช่องค้นหาชื่อ
-    search_query = st.text_input(
-        "ระบุชื่อ หรือนามสกุลของคุณ",
-        placeholder="ตัวอย่าง: สมชาย",
-        help="ไม่ต้องใส่คำนำหน้า เช่น นาย, นาง, นางสาว"
-    )
+    # ช่องค้นหาชื่อ (อยู่ใน form เพื่อให้กด Enter แล้วค้นหาได้)
+    with st.form("search_form", border=False):
+        search_query = st.text_input(
+            "ระบุชื่อ หรือนามสกุลของคุณ",
+            placeholder="ตัวอย่าง: สมชาย (พิมพ์แล้วกด Enter ได้)",
+            help="ไม่ต้องใส่คำนำหน้า เช่น นาย, นาง, นางสาว"
+        )
 
-    search_button = st.button("🔍 ค้นหา", type="primary", use_container_width=True)
+        search_button = st.form_submit_button("🔍 ค้นหา", type="primary", use_container_width=True)
 
 with col2:
     st.info("""
     **📌 วิธีการใช้งาน:**
     1. เลือกกิจกรรม/โครงการ
     2. ใส่ชื่อ-นามสกุลของคุณ
-    3. คลิกปุ่ม "ค้นหา"
+    3. กด Enter หรือคลิกปุ่ม "ค้นหา"
     4. ดาวน์โหลดเกียรติบัตร
 
     **💡 เคล็ดลับ:**

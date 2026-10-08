@@ -2,7 +2,7 @@
 # Deploy to Streamlit Cloud
 
 # Core Framework
-streamlit>=1.28.0
+streamlit>=1.29.0
 
 # Data Processing
 pandas>=2.0.0
