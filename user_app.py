@@ -14,6 +14,9 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# ที่อยู่หน้าเว็บผู้ใช้ (ใช้สร้างปุ่มเปิดนอกแอป LINE)
+APP_URL = st.secrets.get("APP_URL", os.getenv("APP_URL", "https://cersys.streamlit.app/"))
+
 # --- การตั้งค่าหน้าเว็บ ---
 st.set_page_config(
     page_title="ค้นหาและดาวน์โหลดเกียรติบัตร",
@@ -372,18 +375,30 @@ def extract_file_id(link):
 
     return None
 
+def open_in_external_browser(link):
+    """เติม openExternalBrowser=1 ให้แอป LINE เปิดลิงค์ใน Chrome/Safari แทน (เบราว์เซอร์ใน LINE ดาวน์โหลดไฟล์ไม่ได้)"""
+    separator = '&' if '?' in link else '?'
+    return f"{link}{separator}openExternalBrowser=1"
+
+def is_line_browser():
+    """ตรวจว่าเปิดผ่านเบราว์เซอร์ในแอป LINE หรือไม่"""
+    try:
+        return " Line/" in st.context.headers.get("User-Agent", "")
+    except Exception:
+        return False
+
 def convert_to_download_link(link):
     """แปลงเป็นลิงค์ดาวน์โหลดโดยตรง"""
     file_id = extract_file_id(link)
     if file_id:
-        return f"https://drive.google.com/uc?export=download&id={file_id}"
+        return open_in_external_browser(f"https://drive.google.com/uc?export=download&id={file_id}")
     return link
 
 def convert_to_preview_link(link):
     """แปลงเป็นลิงค์ดูไฟล์ (googleusercontent)"""
     file_id = extract_file_id(link)
     if file_id:
-        return f"https://lh3.googleusercontent.com/d/{file_id}"
+        return open_in_external_browser(f"https://lh3.googleusercontent.com/d/{file_id}")
     return link
 
 # --- Dialog สำหรับนโยบายความเป็นส่วนตัว ---
@@ -459,6 +474,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# --- แจ้งผู้ใช้ที่เปิดผ่านแอป LINE ---
+if is_line_browser():
+    st.markdown("""
+    <div class="line-warning">
+        <div class="line-warning-title">⚠️ คุณกำลังเปิดผ่านแอป LINE</div>
+        <div>เบราว์เซอร์ใน LINE ดาวน์โหลดไฟล์ไม่ได้ กรุณากดปุ่มด้านล่างเพื่อเปิดใน Chrome/Safari</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.link_button("🌐 เปิดใน Chrome / Safari", open_in_external_browser(APP_URL), use_container_width=True)
+
 # --- ส่วนค้นหา ---
 events_df = get_events()
 
@@ -522,19 +547,17 @@ if search_button:
         if not results.empty:
             st.success(f"✅ พบข้อมูลจำนวน {len(results)} รายการ")
 
-            # คำเตือนสำหรับผู้ใช้ LINE Browser
+            # คำเตือนสำหรับผู้ใช้ LINE Browser (กรณีปุ่มเปิดภายนอกไม่ทำงาน)
             st.markdown("""
             <div class="line-warning">
-                <div class="line-warning-title">⚠️ หากเปิดผ่านแอป LINE</div>
-                <div>กรุณาคัดลอกลิงค์ไปเปิดในเบราว์เซอร์ (Chrome, Safari) เพื่อดาวน์โหลดไฟล์<br>
-                <strong>วิธี:</strong> กดปุ่ม ⋮ มุมขวาบน → เลือก "เปิดใน Chrome/Safari"</div>
+                <div class="line-warning-title">⚠️ หากเปิดผ่านแอป LINE แล้วดาวน์โหลดไม่ได้</div>
+                <div>กดปุ่ม ⋮ (หรือ ↗) มุมขวาบน → เลือก "เปิดในเบราว์เซอร์อื่น" / "Open in browser" แล้วค้นหาใหม่</div>
             </div>
             """, unsafe_allow_html=True)
 
             for index, row in results.iterrows():
-                st.markdown('<div class="result-card">', unsafe_allow_html=True)
-
-                col_info, col_action = st.columns([3, 1])
+                card = st.container(border=True)
+                col_info, col_action = card.columns([3, 1])
 
                 with col_info:
                     st.markdown(f"### 📄 {row['name']}")
@@ -560,8 +583,6 @@ if search_button:
                         )
                     else:
                         st.error("ไม่พบลิงค์ไฟล์")
-
-                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.warning("❌ ไม่พบรายชื่อนี้ในระบบ")
             st.info("""
