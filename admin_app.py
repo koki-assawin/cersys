@@ -939,8 +939,15 @@ elif menu == "📥 ดาวน์โหลด Template":
     - คุณเตรียม URL ไฟล์เองได้
     """)
 
+    st.success("""
+    **⚡ แนะนำ: แบบฟอร์มที่สร้าง URL อัตโนมัติ**
+    ทำสำเนาแบบฟอร์มนี้ กรอกลำดับที่และชื่อ-สกุล แล้วรันสคริปต์ ระบบจะดึงลิงก์ไฟล์ PDF จากโฟลเดอร์ Google Drive มาใส่คอลัมน์ URL ให้เอง
+    👉 [ทำสำเนาแบบฟอร์ม](https://docs.google.com/spreadsheets/d/15TY0glWWc6Q67P98jfBySdb8Oy8sPnjO9hK_1dLNiyM/copy)
+    (ดูวิธีใช้ที่เมนู 🛠️ เครื่องมือแยกไฟล์ PDF ขั้นตอนที่ 5–6)
+    """)
+
     st.markdown("---")
-    st.subheader("📝 ขั้นตอนการสร้าง Google Sheet")
+    st.subheader("📝 ขั้นตอนการสร้าง Google Sheet (กรอก URL เอง)")
 
     st.markdown("""
     ### 1. สร้าง Google Sheet ใหม่

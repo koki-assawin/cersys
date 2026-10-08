@@ -61,6 +61,14 @@
   table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.95rem; }
   th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
   th { background: var(--soft); font-family: 'Prompt', Tahoma, sans-serif; font-weight: 500; }
+  pre {
+    font-family: Consolas, monospace; font-size: 0.85rem; line-height: 1.5;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; overflow-x: auto; white-space: pre;
+  }
+  details { margin: 14px 0; }
+  summary { cursor: pointer; color: var(--accent); }
+  a { color: var(--accent); word-break: break-all; }
   footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; text-align: center; }
   @media print {
     main { padding: 0; }
@@ -85,7 +93,7 @@
   <span class="step">PDF รวมทุกใบ</span><span class="arrow">→</span>
   <span class="step">แยกไฟล์ด้วยโปรแกรมนี้</span><span class="arrow">→</span>
   <span class="step">อัปโหลดขึ้น Google Drive</span><span class="arrow">→</span>
-  <span class="step">ใส่ลิงก์ใน Google Sheet</span><span class="arrow">→</span>
+  <span class="step">สร้าง URL อัตโนมัติด้วย Google Sheet</span><span class="arrow">→</span>
   <span class="step">เพิ่มกิจกรรมในหน้า Admin</span>
 </div>
 
@@ -136,7 +144,8 @@
   </li>
   <li><b>ตั้งชื่อไฟล์</b> ที่ <span class="ui">File Naming</span>
     <ul>
-      <li><code>1.pdf, 2.pdf, 3.pdf …</code> แนะนำ ใช้กับระบบเกียรติบัตร (ชื่อไฟล์ตรงกับคอลัมน์ “ลำดับที่”)</li>
+      <li><code>1.pdf, 2.pdf, 3.pdf …</code> <b>ใช้แบบนี้สำหรับระบบเกียรติบัตร</b> ชื่อไฟล์จะตรงกับคอลัมน์ “ลำดับที่”
+          และสคริปต์สร้าง URL อัตโนมัติในขั้นตอนที่ 6 ต้องใช้ชื่อไฟล์แบบนี้</li>
       <li><code>filename_part1.pdf …</code> ใช้ชื่อไฟล์เดิมต่อด้วยเลขส่วน</li>
       <li><span class="ui">Custom prefix</span> ตั้งคำนำหน้าเอง เช่น <code>doc_</code> → <code>doc_1.pdf</code></li>
     </ul>
@@ -147,19 +156,126 @@
   <li>เบราว์เซอร์จะดาวน์โหลดไฟล์ <code>ชื่อไฟล์_split.zip</code> แตกไฟล์ออกมาจะได้ PDF ทีละใบ</li>
 </ol>
 
-<h2>5. นำไฟล์เข้าระบบเกียรติบัตร</h2>
+<h2>5. อัปโหลดไฟล์ขึ้น Google Drive</h2>
 <ol>
-  <li>อัปโหลดไฟล์ PDF ทั้งหมดขึ้นโฟลเดอร์ใน Google Drive</li>
-  <li>แชร์โฟลเดอร์เป็น <span class="ui">Anyone with the link</span> → <span class="ui">Viewer</span></li>
-  <li>สร้าง Google Sheet มี 3 คอลัมน์ <code>ลำดับที่</code> <code>ชื่อ-สกุล</code> <code>URL</code>
-      (ดาวน์โหลดแบบฟอร์มได้ที่เมนู <span class="ui">ดาวน์โหลด Template</span>)</li>
-  <li>ใส่ลิงก์ไฟล์ของแต่ละคนในคอลัมน์ URL ให้ตรงกับลำดับ เช่น ลำดับที่ 5 ใช้ลิงก์ของไฟล์ <code>5.pdf</code></li>
-  <li>แชร์ Google Sheet เป็น <span class="ui">Anyone with the link</span> → <span class="ui">Viewer</span>
-      แล้วนำลิงก์ไปใช้ที่เมนู <span class="ui">เพิ่มกิจกรรมใหม่</span></li>
+  <li>เข้า <a href="https://drive.google.com" target="_blank">drive.google.com</a> สร้างโฟลเดอร์ใหม่ 1 โฟลเดอร์ต่อ 1 กิจกรรม
+      เช่น <code>เกียรติบัตร_อบรม_2569</code></li>
+  <li>เปิดโฟลเดอร์นั้น แล้วลากไฟล์ PDF ทั้งหมดที่แยกไว้ (<code>1.pdf</code>, <code>2.pdf</code> …) มาวาง
+      รอจนอัปโหลดครบทุกไฟล์</li>
+  <li>คลิกขวาที่โฟลเดอร์ → <span class="ui">แชร์</span> → ตรง “การเข้าถึงทั่วไป” เลือก
+      <span class="ui">ทุกคนที่มีลิงก์</span> (Anyone with the link) สิทธิ์ <span class="ui">ผู้มีสิทธิ์อ่าน</span> (Viewer)
+      → <span class="ui">เสร็จสิ้น</span><br>
+      ไฟล์ทุกไฟล์ในโฟลเดอร์จะได้สิทธิ์นี้ตามไปด้วย ผู้รับจึงเปิดเกียรติบัตรของตัวเองได้</li>
+  <li><b>คัดลอก ID ของโฟลเดอร์</b> เก็บไว้ใช้ในขั้นตอนที่ 6 ดูได้จากแถบที่อยู่ของเบราว์เซอร์ขณะเปิดโฟลเดอร์
+      เป็นข้อความหลัง <code>/folders/</code><br>
+      ตัวอย่าง: <code>https://drive.google.com/drive/folders/<b>1M-aXTYRq_XHAi0gGoNXOk_6pRZpXTtTD</b></code>
+      → ID คือ <code>1M-aXTYRq_XHAi0gGoNXOk_6pRZpXTtTD</code></li>
 </ol>
-<div class="note">ลำดับหน้าใน PDF ต้องตรงกับลำดับรายชื่อใน Google Sheet ควรเปิดตรวจ 2–3 ไฟล์แบบสุ่มก่อนนำเข้าระบบ</div>
+<div class="warn">ในโฟลเดอร์ควรมีเฉพาะไฟล์ PDF ของกิจกรรมนี้เท่านั้น ห้ามมีไฟล์ชื่อซ้ำกัน และชื่อไฟล์ต้องเป็นตัวเลขล้วน เช่น
+<code>1.pdf</code> (ถ้าชื่อไฟล์มีตัวเลขอื่นปน เช่น <code>2569_1.pdf</code> ระบบจะอ่านเลขผิดเป็น 25691)</div>
 
-<h2>6. ปัญหาที่พบบ่อย</h2>
+<h2>6. สร้าง Google Sheet และใส่ URL อัตโนมัติ</h2>
+<p>ใช้แบบฟอร์ม Google Sheet ที่มีสคริปต์ (Apps Script) สำหรับดึงลิงก์ของไฟล์ PDF ทุกไฟล์ในโฟลเดอร์มาใส่ในคอลัมน์ URL ให้อัตโนมัติ
+ไม่ต้องคัดลอกลิงก์ทีละไฟล์</p>
+
+<h3>6.1 ทำสำเนาแบบฟอร์ม</h3>
+<ol>
+  <li>เปิดลิงก์ทำสำเนาแบบฟอร์ม (ล็อกอินบัญชี Google ก่อน):<br>
+      <a href="https://docs.google.com/spreadsheets/d/15TY0glWWc6Q67P98jfBySdb8Oy8sPnjO9hK_1dLNiyM/copy" target="_blank">https://docs.google.com/spreadsheets/d/15TY0glWWc6Q67P98jfBySdb8Oy8sPnjO9hK_1dLNiyM/copy</a></li>
+  <li>กด <span class="ui">ทำสำเนา</span> (Make a copy) แล้วตั้งชื่อไฟล์ตามกิจกรรม เช่น <code>รายชื่อ_อบรม_2569</code><br>
+      สำเนาจะเป็นของคุณเอง แก้ไขได้ และสคริปต์จะติดมาด้วย</li>
+</ol>
+
+<h3>6.2 กรอกลำดับที่และชื่อ-สกุล</h3>
+<p>กรอกตั้งแต่แถวที่ 2 ลงไป <b>เว้นคอลัมน์ C (URL) ว่างไว้</b> สคริปต์จะกรอกให้ ห้ามแก้ชื่อหัวคอลัมน์ในแถวที่ 1</p>
+<table>
+  <tr><th>A: ลำดับที่</th><th>B: ชื่อ-สกุล</th><th>C: URL</th><th>ไฟล์ที่ตรงกัน</th></tr>
+  <tr><td>1</td><td>นายสมชาย ใจดี</td><td><i>(เว้นว่าง)</i></td><td><code>1.pdf</code></td></tr>
+  <tr><td>2</td><td>นางสาวสมหญิง รักดี</td><td><i>(เว้นว่าง)</i></td><td><code>2.pdf</code></td></tr>
+  <tr><td>3</td><td>นายทดสอบ ระบบ</td><td><i>(เว้นว่าง)</i></td><td><code>3.pdf</code></td></tr>
+</table>
+<div class="note"><b>สำคัญที่สุด:</b> ลำดับที่ต้องตรงกับไฟล์ คือ <code>1.pdf</code> ต้องเป็นเกียรติบัตรของคนที่มีลำดับที่ 1
+ถ้าลำดับรายชื่อไม่ตรงกับลำดับหน้าใน PDF ต้นฉบับ ผู้รับจะได้เกียรติบัตรของคนอื่น
+แนะนำให้คัดลอกรายชื่อจากไฟล์เดียวกับที่ใช้ทำจดหมายเวียนเกียรติบัตร</div>
+
+<h3>6.3 ใส่ ID โฟลเดอร์ในสคริปต์</h3>
+<ol>
+  <li>ใน Google Sheet ไปที่เมนู <span class="ui">ส่วนขยาย</span> (Extensions) → <span class="ui">Apps Script</span></li>
+  <li>หาบรรทัดที่ 3 <code>var folderId = "....";</code> แล้ว <b>แทนที่ข้อความในเครื่องหมายคำพูด</b>
+      ด้วย ID โฟลเดอร์จากขั้นตอนที่ 5 ข้อ 4 (เครื่องหมาย <code>"</code> ทั้งสองข้างต้องอยู่ครบ)
+<pre>var folderId = "<b>ใส่ ID โฟลเดอร์ของคุณตรงนี้</b>";</pre></li>
+  <li>กด <span class="ui">บันทึก</span> (ไอคอนแผ่นดิสก์ หรือ <kbd>Ctrl</kbd>+<kbd>S</kbd>)</li>
+</ol>
+
+<h3>6.4 เรียกใช้สคริปต์</h3>
+<ol>
+  <li>ตรวจว่าช่องเลือกฟังก์ชันด้านบนเป็น <code>generatePdfUrls</code> แล้วกด <span class="ui">▷ เรียกใช้</span> (Run)</li>
+  <li><b>ครั้งแรกต้องให้สิทธิ์</b> (ทำครั้งเดียวต่อสำเนา):
+    <ol type="a">
+      <li>กด <span class="ui">ตรวจสอบสิทธิ์</span> (Review permissions) แล้วเลือกบัญชี Google ของคุณ</li>
+      <li>ถ้าขึ้นว่า <span class="ui">Google ยังไม่ได้ยืนยันแอปนี้</span> ให้กด <span class="ui">ขั้นสูง</span> (Advanced)
+          → <span class="ui">ไปที่ … (ไม่ปลอดภัย)</span><br>
+          เป็นเรื่องปกติของสคริปต์ที่เราสร้างเอง สคริปต์นี้แค่อ่านรายชื่อไฟล์ในโฟลเดอร์และเขียนลิงก์ลง Sheet ของคุณเท่านั้น</li>
+      <li>กด <span class="ui">อนุญาต</span> (Allow)</li>
+    </ol>
+  </li>
+  <li>รอจนในส่วน <span class="ui">บันทึกการดำเนินการ</span> ขึ้น <span class="ui">การดำเนินการเสร็จสมบูรณ์</span>
+      (ไฟล์หลักร้อยใช้เวลาประมาณ 1–2 นาที) ที่หน้า Google Sheet จะขึ้นกล่อง “สร้าง URL เรียบร้อยแล้ว!”</li>
+  <li>กลับไปที่ Google Sheet ตรวจว่าคอลัมน์ C มีลิงก์ครบทุกแถว
+      แล้ว<b>คลิกลิงก์สุ่ม 2–3 แถว</b> ดูว่าชื่อในเกียรติบัตรตรงกับชื่อในแถวนั้น</li>
+</ol>
+
+<details>
+<summary><b>โค้ดสคริปต์ทั้งหมด</b> (ใช้เมื่อเปิด Apps Script แล้วไม่มีโค้ด ให้คัดลอกไปวางแทนของเดิมทั้งหมด)</summary>
+<pre>function generatePdfUrls() {
+  // 1. ระบุ ID ของโฟลเดอร์ Google Drive และ Sheet
+  var folderId = "ใส่ ID โฟลเดอร์ของคุณตรงนี้";
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("ชีต1"); // ชื่อชีตของคุณ
+
+  // 2. ดึงข้อมูลจากชีต (คอลัมน์ ลำดับ)
+  var data = sheet.getDataRange().getValues();
+
+  // 3. เข้าถึงโฟลเดอร์ใน Drive
+  var folder = DriveApp.getFolderById(folderId);
+  var files = folder.getFilesByType(MimeType.PDF);
+
+  // 4. วนลูปอ่านไฟล์ PDF ทั้งหมดในโฟลเดอร์
+  while (files.hasNext()) {
+    var file = files.next();
+    var fileName = file.getName(); // เช่น "1.pdf"
+    var fileUrl = file.getUrl();
+
+    // ดึงเฉพาะตัวเลขจากชื่อไฟล์ เช่น "1.pdf" -> "1"
+    var fileNumber = fileName.replace(/[^0-9]/g, "");
+
+    // 5. ค้นหาแถวใน Sheet ที่ "ลำดับ" ตรงกับ "เลขไฟล์"
+    for (var i = 1; i &lt; data.length; i++) { // เริ่มที่ 1 เพื่อข้ามหัวตาราง
+      var rowOrder = data[i][0].toString(); // คอลัมน์ A (ลำดับ)
+
+      if (rowOrder === fileNumber) {
+        // บันทึก URL ลงในคอลัมน์ C (URL) แถวที่ i+1
+        sheet.getRange(i + 1, 3).setValue(fileUrl);
+        break;
+      }
+    }
+  }
+  Browser.msgBox("สร้าง URL เรียบร้อยแล้ว!");
+}</pre>
+</details>
+
+<h2>7. เพิ่มกิจกรรมในระบบเกียรติบัตร</h2>
+<ol>
+  <li>ใน Google Sheet กด <span class="ui">แชร์</span> → “การเข้าถึงทั่วไป” เลือก <span class="ui">ทุกคนที่มีลิงก์</span>
+      สิทธิ์ <span class="ui">ผู้มีสิทธิ์อ่าน</span> → <span class="ui">คัดลอกลิงก์</span></li>
+  <li>เข้าหน้า Admin เมนู <span class="ui">เพิ่มกิจกรรมใหม่</span> กรอกชื่อกิจกรรม แล้ววางลิงก์ Google Sheet</li>
+  <li>กด <span class="ui">ทดสอบอ่าน Google Sheet</span> ตรวจว่าจำนวนรายการถูกต้อง แล้วกด <span class="ui">สร้างกิจกรรม</span></li>
+  <li>ทดลองค้นหาชื่อตัวเองในหน้าผู้ใช้ และเปิดเกียรติบัตรดูอีกครั้ง</li>
+</ol>
+<div class="note">ถ้าภายหลังแก้ไขรายชื่อหรือ URL ใน Google Sheet ให้ไปที่เมนู <span class="ui">จัดการกิจกรรม</span> → <span class="ui">แก้ไข</span>
+→ ติ๊ก <span class="ui">โหลดรายชื่อจาก Google Sheet ใหม่</span> → <span class="ui">บันทึก</span></div>
+
+<h2>8. ปัญหาที่พบบ่อย</h2>
 <table>
   <tr><th>อาการ</th><th>วิธีแก้</th></tr>
   <tr><td>ดับเบิลคลิก .bat แล้วหน้าต่างปิดไปทันที</td>
@@ -176,6 +292,20 @@
       <td>ใส่ Number of Parts น้อยเกินไป หรือแยกตามขนาดแล้วไฟล์เล็กกว่าขนาดที่กำหนด</td></tr>
   <tr><td>ย้ายโฟลเดอร์ไปที่อื่นแล้วเปิดไม่ได้</td>
       <td>ดับเบิลคลิก <code>1_ติดตั้ง.bat</code> ใหม่อีกครั้ง โปรแกรมจะติดตั้งให้ใหม่เอง</td></tr>
+  <tr><th colspan="2">Apps Script (สร้าง URL อัตโนมัติ)</th></tr>
+  <tr><td><code>Exception: No item with the given ID could be found</code><br>หรือ <code>Unexpected error while getting the method or property getFolderById</code></td>
+      <td>ID โฟลเดอร์ผิด ตรวจว่าคัดลอกมาครบ ไม่มีช่องว่างหรือ <code>?usp=…</code> ติดมา
+          และบัญชีที่รันสคริปต์ต้องเปิดโฟลเดอร์นั้นได้</td></tr>
+  <tr><td><code>TypeError: Cannot read properties of null (reading 'getDataRange')</code></td>
+      <td>ชื่อแท็บชีตไม่ใช่ <code>ชีต1</code> ให้เปลี่ยนชื่อแท็บด้านล่างกลับเป็น <code>ชีต1</code>
+          หรือแก้ชื่อในบรรทัด <code>getSheetByName("ชีต1")</code> ให้ตรงกับชื่อแท็บ</td></tr>
+  <tr><td><code>Cannot call Browser.msgBox() from this context</code></td>
+      <td>ไม่ใช่ปัญหา URL ถูกกรอกเรียบร้อยแล้ว เพียงแต่แสดงกล่องข้อความไม่ได้ เพราะไม่ได้เปิดหน้า Google Sheet ไว้</td></tr>
+  <tr><td>บางแถวไม่มี URL</td>
+      <td>ไม่มีไฟล์เลขนั้นในโฟลเดอร์ หรือชื่อไฟล์ไม่ตรง เช่น อัปโหลดซ้ำเป็น <code>5 (1).pdf</code>
+          (จะอ่านเป็นเลข 51) ให้แก้ชื่อไฟล์ใน Drive แล้วรันสคริปต์ใหม่ได้</td></tr>
+  <tr><td>เปิดลิงก์แล้วขึ้น “ต้องมีสิทธิ์เข้าถึง”</td>
+      <td>ยังไม่ได้แชร์โฟลเดอร์เป็น “ทุกคนที่มีลิงก์” (ขั้นตอนที่ 5 ข้อ 3)</td></tr>
 </table>
 
 <footer>ระบบดาวน์โหลดเกียรติบัตรออนไลน์ · โรงเรียนเตรียมอุดมศึกษาภาคใต้</footer>
